@@ -10,7 +10,10 @@
 ### 环境配置
 Python虚拟环境配置
 Python3.6.5+
+- 把根目录文件```.env_example```复制到根目录```.env```，作为当前环境的配置文件  
+- 把根目录文件```.gitignore_example```复制到根目录```.gitignore```，作为当前环境的忽略文件  
 ```Bash
+
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
