@@ -1,0 +1,8 @@
+.*
+!.gitignore_example
+!.env_example
+*.pyc
+.idea/
+log
+venv/
+env/
