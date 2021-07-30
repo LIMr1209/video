@@ -42,42 +42,57 @@ def download(video_url: str, path: str):
         print(e)
 
 
-def start(url: str):
+def start(url: str, type: int):
+    '''
+    :param url:
+    :param type: 类型 1 url详情链接 2 作者链接 3 合集链接
+    :return:
+    '''
     # chrome.exe --remote-debugging-port=9222 --user-data-dir="C:\selenium\AutomationProfile"
     chrome_options = Options()
     chrome_options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
 
     browser = webdriver.Chrome(options=chrome_options)
-    # url = 'https://www.douyin.com/video/6969844956399668488?previous_page=main_page' # 横屏
-    url = 'https://v.douyin.com/evq3qMW/'  # == 'https://www.douyin.com/video/6989560504071081247?previous_page=app_code_link' # app 竖屏
-    browser.get(url)
+    if type == 1:
 
-    try:
-        elem = WebDriverWait(browser, 20, 0.5).until(
-            EC.presence_of_element_located(
-                (By.XPATH, '//video')
+        # url = 'https://www.douyin.com/video/6969844956399668488?previous_page=main_page' # 横屏
+        url = 'https://v.douyin.com/evq3qMW/'  # == 'https://www.douyin.com/video/6989560504071081247?previous_page=app_code_link' # app 竖屏
+        browser.get(url)
+
+        try:
+            elem = WebDriverWait(browser, 20, 0.5).until(
+                EC.presence_of_element_located(
+                    (By.XPATH, '//video')
+                )
             )
-        )
-    except:
-        print('错误')
-        return
-    video_url = browser.find_element_by_xpath('//video').get_attribute('src')
-    print(video_url)
-    author = browser.find_element_by_xpath(
-        '//*[@id="root"]/div/div[2]/div[1]/div[2]/div/div[1]/div[2]/a/div/span/span/span/span/span').get_attribute(
-        'innerText')
-    published_at = browser.find_element_by_xpath(
-        '//*[@id="root"]/div/div[2]/div[1]/div[1]/div[1]/div[2]/div/div[2]/span').get_attribute('innerText')
-    title = browser.title
-    love_count = browser.find_element_by_xpath(
-        '//*[@id="root"]/div/div[2]/div[1]/div[1]/div[1]/div[2]/div/div[1]/div[1]/span').get_attribute('innerText')
-    comment_count = browser.find_element_by_xpath(
-        '//*[@id="root"]/div/div[2]/div[1]/div[1]/div[1]/div[2]/div/div[1]/div[2]/span').get_attribute('innerText')
+        except:
+            print('错误')
+            return
+        video_url = browser.find_element_by_xpath('//video').get_attribute('src')
+        print(video_url)
+        author = browser.find_element_by_xpath(
+            '//*[@id="root"]/div/div[2]/div[1]/div[2]/div/div[1]/div[2]/a/div/span/span/span/span/span').get_attribute(
+            'innerText')
+        published_at = browser.find_element_by_xpath(
+            '//*[@id="root"]/div/div[2]/div[1]/div[1]/div[1]/div[2]/div/div[2]/span').get_attribute('innerText')
+        title = browser.title
+        love_count = browser.find_element_by_xpath(
+            '//*[@id="root"]/div/div[2]/div[1]/div[1]/div[1]/div[2]/div/div[1]/div[1]/span').get_attribute('innerText')
+        comment_count = browser.find_element_by_xpath(
+            '//*[@id="root"]/div/div[2]/div[1]/div[1]/div[1]/div[2]/div/div[1]/div[2]/span').get_attribute('innerText')
 
-    download(video_url, '{}.mp4'.format(title))
+        download(video_url, '{}.mp4'.format(title))
+    elif type == 2:
+        pass
+    elif type == 3:
+        pass
 
 
 if __name__ == '__main__':
-    # url = 'https://www.douyin.com/video/6969844956399668488?previous_page=main_page' # 横屏
-    url = 'https://v.douyin.com/evq3qMW/'  # == 'https://www.douyin.com/video/6989560504071081247?previous_page=app_code_link' # app 竖屏
-    start(url)
+    # detail_url = 'https://www.douyin.com/video/6969844956399668488?previous_page=main_page' # 横屏
+    # detail_url = 'https://v.douyin.com/evq3qMW/'  # == 'https://www.douyin.com/video/6989560504071081247?previous_page=app_code_link' # app 竖屏
+    # start(detail_url, 1)
+    # author_url = 'https://www.douyin.com/user/MS4wLjABAAAA4N4OrZzTSmCPp8vVAqCeyU215Kav2JgFv2Lfy4DNWRs'
+    # start(author_url, 2)
+    collect_url = 'https://www.douyin.com/collection/6782048098886617101'
+    start(collect_url, 3)
