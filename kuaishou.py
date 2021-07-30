@@ -47,7 +47,7 @@ def get_item_id(url, headers):
     :return:
     '''
     result = urlparse(url)
-    if result == 'v.kuaishou.com':
+    if result.hostname == 'v.kuaishou.com':
         res = requests.get(url, headers=headers)
         url = res.url
     item_id = url.split('?')[0].rsplit('/', 1)[1]
@@ -64,7 +64,7 @@ def start(url: str):
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.164 Safari/537.36',
     }
 
-    item_id = get_item_id(url)
+    item_id = get_item_id(url, headers)
 
     data = {'operationName': 'visionVideoDetail', 'variables': {'photoId': item_id, 'page': 'detail'},
             'query': 'query visionVideoDetail($photoId: String, $type: String, $page: String, $webPageArea: String) {  visionVideoDetail(photoId: $photoId, type: $type, page: $page, webPageArea: $webPageArea) {    status    type    author {      id      name      following      headerUrl      __typename    }    photo {      id      duration      caption      likeCount      realLikeCount      coverUrl      photoUrl      liked      timestamp      expTag      llsid      viewCount      videoRatio      stereoType      croppedPhotoUrl      manifest {        mediaType        businessType        version        adaptationSet {          id          duration          representation {            id            defaultSelect            backupUrl            codecs            url            height            width            avgBitrate            maxBitrate            m3u8Slice            qualityType            qualityLabel            frameRate            featureP2sp            hidden            disableAdaptive            __typename          }          __typename        }        __typename      }      __typename    }    tags {      type      name      __typename    }    commentLimit {      canAddComment      __typename    }    llsid    danmakuSwitch    __typename  }}'}
@@ -81,6 +81,6 @@ def start(url: str):
 
 
 if __name__ == '__main__':
-    # url = 'https://v.kuaishou.com/cLHMJI'
-    url = 'https://www.kuaishou.com/short-video/3xk5waye24pfxn6?authorId=3xhfyp6fexi2476&streamSource=find&area=homexxbrilliant'
+    url = 'https://v.kuaishou.com/cLHMJI'
+    # url = 'https://www.kuaishou.com/short-video/3xk5waye24pfxn6?authorId=3xhfyp6fexi2476&streamSource=find&area=homexxbrilliant'
     start(url)
