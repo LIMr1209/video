@@ -1,7 +1,8 @@
 import json
 import os
 import time
-from urllib.parse import urlparse
+from urllib.parse import urlparse, unquote
+import re
 
 import requests
 from fake_useragent import UserAgent
@@ -11,6 +12,14 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+
+fake_headers = {
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',  # noqa
+    'Accept-Charset': 'UTF-8,*;q=0.5',
+    'Accept-Encoding': 'gzip,deflate,sdch',
+    'Accept-Language': 'en-US,en;q=0.8',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.74 Safari/537.36 Edg/79.0.309.43',  # noqa
+}
 
 
 def download(video_url: str, path: str):
@@ -80,6 +89,22 @@ def browser_init():
     # browser.set_script_timeout(10)  # 执行js 超时时间
     # WebDriverWait(browser, 30)  # 指定元素加载超时时间
     return browser
+
+def start_detail_new(url: str = None):
+    response = requests.get(url, headers=fake_headers)
+    page_content = unquote(response.text)
+    title = re.findall(r'"desc":"([^"]*)"', page_content)[0].strip()
+    # video URLs are in this pattern {"src":"THE_URL"}, in json format
+    urls_pattern = r'"playAddr":(\[.*?\])'
+    urls = json.loads(re.findall(urls_pattern, page_content)[0])
+    video_url = 'https:' + urls[0]['src']
+    current_folder = os.getcwd()
+    target_folder = os.path.join(current_folder, 'download', 'detail')
+    if not os.path.isdir(target_folder):
+        os.mkdir(target_folder)
+    path = os.path.join(target_folder, '{}.mp4'.format(title))
+    download(video_url, path)
+
 
 
 def start_detail(url: str = None):
@@ -191,6 +216,44 @@ def start_user(user_url: str = None, account_name: str = None, sec_uid: str = No
         else:
             break
 
+def start_collect_new(collect_url: str=None, collect_id: int=None):
+    if not collect_url and not collect_id:
+        print("参数错误")
+        return
+    if collect_url:
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.164 Safari/537.36',
+        }
+        result = urlparse(collect_url)
+        if result.hostname == 'v.douyin.com':
+            res = requests.get(collect_url, headers=headers)
+            collect_url = res.history[0].headers['location']
+        collect_id = collect_url.split('?')[0].rsplit('/', 2)[1]
+    template_url = 'https://www.douyin.com/collection/%s?pos=%s'
+    pos = 0
+    current_folder = os.getcwd()
+    target_folder = os.path.join(current_folder, 'download', 'collect', 'test')
+    if not os.path.exists(target_folder):
+        os.makedirs(target_folder)
+    while True:
+        url = template_url % (collect_id, pos)
+        response = requests.get(url, headers=fake_headers)
+        page_content = unquote(response.text)
+        if '你要观看的视频不存在' in page_content:
+            print('合集爬取完成')
+            return
+        title = re.findall(r'"desc":"([^"]*)"', page_content)[0].strip()
+        # video URLs are in this pattern {"src":"THE_URL"}, in json format
+        urls_pattern = r'"playAddr":(\[.*?\])'
+        urls = json.loads(re.findall(urls_pattern, page_content)[0])
+        video_url = 'https:' + urls[0]['src']
+        current_folder = os.getcwd()
+        target_folder = os.path.join(current_folder, 'download', 'detail')
+        if not os.path.isdir(target_folder):
+            os.mkdir(target_folder)
+        path = os.path.join(target_folder, '{}.mp4'.format(title))
+        download(video_url, path)
+
 
 def start_collect(collect_url: str=None, collect_id: int=None):
     """
@@ -246,8 +309,9 @@ if __name__ == '__main__':
     # detail_url = 'https://www.douyin.com/video/6969844956399668488?previous_page=main_page' # 横屏
     # detail_url = 'https://v.douyin.com/evq3qMW/'  # == 'https://www.douyin.com/video/6989560504071081247?previous_page=app_code_link' # app 竖屏
     # start_detail(detail_url)
+    # start_detail_new(detail_url)
     # author_url = 'https://www.douyin.com/user/MS4wLjABAAAA4N4OrZzTSmCPp8vVAqCeyU215Kav2JgFv2Lfy4DNWRs'
-    # start_user(account_name="mei9578")
+    start_user(account_name="mei9578")
     # collect_url = 'https://www.douyin.com/collection/6990254672946661413'
-    collect_url = 'https://v.douyin.com/ect8xBe/'
-    start_collect(collect_url)
+    # collect_url = 'https://v.douyin.com/ect8xBe/'
+    # start_collect(collect_url)
